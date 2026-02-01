@@ -266,7 +266,7 @@ class ScaraRobotTemplate():
                 - list[np.ndarray]: List of 4x4 individual link transforms (length = num_dof).
         """
         ee = ut.EndEffector()
-        Hlist = []
+        Hlist = [np.eye(4,4)] * self.num_dof
         return ee, Hlist
 
 
@@ -422,7 +422,7 @@ class FiveDOFRobotTemplate():
 
         """
         ee = ut.EndEffector()
-        Hlist = []
+        Hlist = [np.eye(4,4)] * self.num_dof
         return ee, Hlist
 
 
