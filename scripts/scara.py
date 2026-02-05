@@ -30,9 +30,7 @@ class ScaraRobot(ScaraRobotTemplate):
         # Combine R and d into H
         H_01 = np.eye(4)
         H_01[0:3, 0:3] = R_01
-        print(H_01)
         H_01[0:3, 3:4] = d_01
-        print(H_01)
         
         # Calculate H matrix for {1} -> {2}
         R_12 = np.array([[cos(th2), -sin(th2), 0],
