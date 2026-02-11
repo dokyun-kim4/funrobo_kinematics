@@ -2,7 +2,7 @@ from math import *
 import pandas as pd
 import numpy as np
 import funrobo_kinematics.core.utils as ut
-from funrobo_kinematics.core import Visualizer, RobotSim
+from funrobo_kinematics.core.visualizer import Visualizer, RobotSim # type: ignore
 from funrobo_kinematics.core.arm_models import ScaraRobotTemplate
 
 
