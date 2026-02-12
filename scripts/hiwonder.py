@@ -1,5 +1,4 @@
 from math import *
-import pandas as pd
 import numpy as np
 import funrobo_kinematics.core.utils as ut
 from funrobo_kinematics.core.visualizer import Visualizer, RobotSim
@@ -12,7 +11,7 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
     def calc_forward_kinematics(self, joint_values: list, radians=True):
         curr_joint_values = joint_values.copy()
         l1, l2, l3, l4, l5 = self.l1, self.l2, self.l3, self.l4, self.l5
-        th1,th2,th3,th4,th5 = self.joint_values
+        th1,th2,th3,th4,th5 = curr_joint_values if radians else np.rad2deg(curr_joint_values)
 
         # order or variables: theta, d, a, alpha
         DH = np.array([[th1, l1, 0, -pi/2],

@@ -1,5 +1,4 @@
 from math import *
-import pandas as pd
 import numpy as np
 import funrobo_kinematics.core.utils as ut
 from funrobo_kinematics.core.visualizer import Visualizer, RobotSim # type: ignore
@@ -13,7 +12,7 @@ class Kinova6DOF(KinovaRobotTemplate):
     def calc_forward_kinematics(self, joint_values: list, radians=True):
         curr_joint_values = joint_values.copy()
         l1, l2, l3, l4, l5, l6, l7 = self.l1, self.l2, self.l3, self.l4, self.l5, self.l6, self.l7
-        th1, th2, th3, th4, th5, th6 = curr_joint_values
+        th1, th2, th3, th4, th5, th6 = curr_joint_values if radians else np.rad2deg(curr_joint_values)
 
         DH = np.array([[0, l1, 0, pi],
                        [th1, -l2, 0, pi/2],
@@ -24,7 +23,6 @@ class Kinova6DOF(KinovaRobotTemplate):
                        [th6, -l6-l7, 0, pi]])
 
         H_LIST = [ut.dh_to_matrix(DH[i]) for i in range(len(curr_joint_values) + 1)]
-        print(len(H_LIST))
         H_01, H_12, H_23, H_34, H_45, H_56, H_67= H_LIST
         H_EE = H_01@H_12@H_23@H_34@H_45@H_56@H_67  # Final transformation matrix for EE
 
