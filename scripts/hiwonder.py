@@ -13,6 +13,16 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         self.joint_upper_lim = np.array([l[1] for l in self.joint_limits])
     
     def calc_forward_kinematics(self, joint_values: list, radians=True):
+        """
+        Calculate the forward kinematics for the HiWonder arm.
+
+        Args:
+            joint_values (list): List of joint angles in radians or degrees.
+            radians (bool): Whether the input joint angles are in radians.
+
+        Returns:
+            tuple: (EndEffector, list of H matrices for each joint)
+        """
         curr_joint_values = joint_values.copy()
         DH = self.calc_dh(joint_values)
 
@@ -31,6 +41,17 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         return ee, H_LIST
 
     def calc_velocity_kinematics(self, joint_values: list, vel: list, dt: float = 0.02):
+        """
+        Calculate the new joint angles based on the desired end effector velocity.
+
+        Args:
+            joint_values (list): Current joint angles in radians.
+            vel (list): Desired end effector velocity [vx, vy, vz].
+            dt (float): Time step for the velocity update.
+        
+        Returns:
+            new_joint_values (list): Updated joint angles in radians.
+        """
         new_joint_values = joint_values.copy()
 
         # move robot slightly out of zeros singularity
@@ -53,9 +74,19 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         return new_joint_values
 
 
-    def calc_jacobian(self, joint_values: list):
+    def calc_jacobian(self, joint_values: list, radians=True):
+        """
+        Calculate the Jacobian of linear velocity for the HiWonder arm.
 
-        DH = self.calc_dh(joint_values)
+        Args:
+            joint_values (list): Current joint angles in radians.
+            radians (bool): Whether the input joint angles are in radians.
+
+        Returns:
+            np.ndarray: The Jacobian matrix.
+        """
+
+        DH = self.calc_dh(joint_values, radians=radians)
         
         H_LIST = [ut.dh_to_matrix(DH[i]) for i in range(len(joint_values))]
         H_01, H_12, H_23, H_34, H_45 = H_LIST
@@ -80,13 +111,35 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
 
         return jacobian
 
-    def calc_inv_jacobian(self, joint_values: list):
-        lam = 0.05
-        J = self.calc_jacobian(joint_values)
-        return J.T@ np.linalg.inv(J@J.T+lam**2*np.eye(J.shape[0]))
-        #return np.linalg.pinv(jacobian, rcond=1e-2)
+    def calc_inv_jacobian(self, joint_values: list, lambda_: float = 0.05):
+        """
+        Calculate the pseudo-inverse of the Jacobian with dampening.
 
-    def calc_dh(self, joint_values: list):
+        Using the formula: J^T * (J * J^T + lambda^2 * I)^(-1)
+        where lambda is the dampening factor to avoid singularities.
+
+        Args:
+            joint_values (list): Current joint angles in radians.
+            lambda_ (float): Dampening factor
+        
+        Returns:
+            np.ndarray: The pseudo-inverse of the Jacobian matrix.
+
+        """
+        J = self.calc_jacobian(joint_values)
+        return J.T@ np.linalg.inv(J@J.T + (lambda_**2)*np.eye(J.shape[0]))
+
+    def calc_dh(self, joint_values: list, radians=True):
+        """
+        Calculate the DH parameters for the HiWonder arm.
+
+        Args:
+            joint_values (list): List of joint angles in radians or degrees.
+            radians (bool): Whether the input joint angles are in radians.
+        
+        Returns:
+            np.ndarray: DH table
+        """
         l1, l2, l3, l4, l5 = self.l1, self.l2, self.l3, self.l4, self.l5
         th1,th2,th3,th4,th5 = joint_values if radians else np.rad2deg(joint_values)
         # order or variables: theta, d, a, alpha
