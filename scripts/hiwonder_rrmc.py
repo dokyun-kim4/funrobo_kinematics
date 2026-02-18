@@ -20,13 +20,6 @@ def run_rrmc():
         dt = 1 / control_hz
 
         print("Waiting for initial joint reading...")
-        #time.sleep(1)
-        #curr_joints_deg = robot.get_joint_values()
-        #if all(j == 0 for j in curr_joints_deg):
-        #     print("[WARNING] Initial joint reading is all zeros. Check connection.")
-        
-        #target_joints_rad = [np.deg2rad(j) for j in curr_joints_deg[:5]]
-        #print(f"Initial target joints (rad): {target_joints_rad}")
 
         while True:
             t_start = time.time()
