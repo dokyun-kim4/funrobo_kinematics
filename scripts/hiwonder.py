@@ -13,27 +13,9 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         self.joint_upper_lim = np.array([l[1] for l in self.joint_limits])
     
     def calc_forward_kinematics(self, joint_values: list, radians=True):
-        """
-        Calculates the forward kinematics for the robot based on the given joint values.
-
-        Args:
-            joint_values (list): The current joint values of the robot.
-            radians (bool): Whether the joint values are in radians or degrees.
-        
-        Returns:
-            ee (ut.EndEffector): The end effector position and orientation.
-            H_LIST (list): A list of transformation matrices for each joint.
-        """
         curr_joint_values = joint_values.copy()
-        l1, l2, l3, l4, l5 = self.l1, self.l2, self.l3, self.l4, self.l5
-        th1,th2,th3,th4,th5 = curr_joint_values if radians else np.rad2deg(curr_joint_values)
+        DH = self.calc_dh(joint_values)
 
-        # order or variables: theta, d, a, alpha
-        DH = np.array([[th1, l1, 0, -pi/2],
-                       [th2-pi/2, 0, l2, pi],
-                       [th3, 0, l3, pi],
-                       [pi/2+th4, 0, 0, pi/2],
-                       [th5, l4+l5, 0, 0]])
         H_LIST = [ut.dh_to_matrix(DH[i]) for i in range(len(curr_joint_values))]
         H_01, H_12, H_23, H_34, H_45 = H_LIST
         H_EE = H_01@H_12@H_23@H_34@H_45  # Final transformation matrix for EE
@@ -42,30 +24,18 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         ee = ut.EndEffector()
         ee.x, ee.y, ee.z = (H_EE @ np.array([0, 0, 0, 1]))[:3]
         
-        # Set the end effector (EE) orientation in RPY (roll, pitch, yaw)
+        # Extract and assign the RPY (roll, pitch, yaw) from the rotation matrix
         rpy = ut.rotm_to_euler(H_EE[:3, :3])
         ee.rotx, ee.roty, ee.rotz = rpy[0], rpy[1], rpy[2]
 
         return ee, H_LIST
 
     def calc_velocity_kinematics(self, joint_values: list, vel: list, dt: float = 0.02):
-        """
-        Calculates the velocity kinematics for the robot based on the given end effector velocity input.
-
-        Args:
-            joint_values (list): The current joint values of the robot.
-            vel (list): The velocity vector for the end effector [vx, vy, vz].
-            dt (float): The time step for the velocity update.
-
-        Returns:
-            new_joint_values (list): The updated joint values after applying the velocity input.
-        """
         new_joint_values = joint_values.copy()
 
         # move robot slightly out of zeros singularity
         if all(theta == 0.0 for theta in new_joint_values):
             new_joint_values = [theta + np.random.rand()*0.02 for theta in new_joint_values]
-
 
         JV_INV = self.calc_inv_jacobian(new_joint_values)
 
@@ -83,28 +53,12 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         return new_joint_values
 
 
-
     def calc_jacobian(self, joint_values: list):
-        """
-        Calculates the Jacobian matrix for the robot based on the current joint values.
 
-        Args:
-            joint_values (list): The current joint values of the robot.
-
-        Returns:
-            jacobian (numpy.ndarray): The Jacobian matrix of the robot; linear velocity component only
-        """
-
-        l1, l2, l3, l4, l5 = self.l1, self.l2, self.l3, self.l4, self.l5
-        th1,th2,th3,th4,th5 = joint_values if radians else np.rad2deg(joint_values)
-        # order or variables: theta, d, a, alpha
-        DH = np.array([[th1, l1, 0, -pi/2],
-                       [th2-pi/2, 0, l2, pi],
-                       [th3, 0, l3, pi],
-                       [pi/2+th4, 0, 0, pi/2],
-                       [th5, l4+l5, 0, 0]])
+        DH = self.calc_dh(joint_values)
         
-        H_01, H_12, H_23, H_34, H_45 = [ut.dh_to_matrix(DH[i]) for i in range(len(joint_values))]
+        H_LIST = [ut.dh_to_matrix(DH[i]) for i in range(len(joint_values))]
+        H_01, H_12, H_23, H_34, H_45 = H_LIST
         H_EE = H_01@H_12@H_23@H_34@H_45  # Final transformation matrix for EE
 
         H_02 = H_01@H_12
@@ -127,15 +81,23 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         return jacobian
 
     def calc_inv_jacobian(self, joint_values: list):
-        """
-        Returns the inverse of the Jacobian matrix.
+        lam = 0.05
+        J = self.calc_jacobian(joint_values)
+        return J.T@ np.linalg.inv(J@J.T+lam**2*np.eye(J.shape[0]))
+        #return np.linalg.pinv(jacobian, rcond=1e-2)
 
-        Returns:
-            np.ndarray: The inverse Jacobian matrix.
-        """
-        return np.linalg.pinv(self.calc_jacobian(joint_values))
+    def calc_dh(self, joint_values: list):
+        l1, l2, l3, l4, l5 = self.l1, self.l2, self.l3, self.l4, self.l5
+        th1,th2,th3,th4,th5 = joint_values if radians else np.rad2deg(joint_values)
+        # order or variables: theta, d, a, alpha
+        DH = np.array([[th1, l1, 0, -pi/2],
+                       [th2-pi/2, 0, l2, pi],
+                       [th3, 0, l3, pi],
+                       [pi/2+th4, 0, 0, pi/2],
+                       [th5, l4+l5, 0, 0]])
+        return DH
 
-        
+
 if __name__ == "__main__":
     
     model = HiWonder5DOF()
