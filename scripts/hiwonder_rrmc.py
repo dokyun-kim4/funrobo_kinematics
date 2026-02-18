@@ -20,13 +20,13 @@ def run_rrmc():
         dt = 1 / control_hz
 
         print("Waiting for initial joint reading...")
-        time.sleep(1)
-        curr_joints_deg = robot.get_joint_values()
-        if all(j == 0 for j in curr_joints_deg):
-             print("[WARNING] Initial joint reading is all zeros. Check connection.")
+        #time.sleep(1)
+        #curr_joints_deg = robot.get_joint_values()
+        #if all(j == 0 for j in curr_joints_deg):
+        #     print("[WARNING] Initial joint reading is all zeros. Check connection.")
         
-        target_joints_rad = [np.deg2rad(j) for j in curr_joints_deg[:5]]
-        print(f"Initial target joints (rad): {target_joints_rad}")
+        #target_joints_rad = [np.deg2rad(j) for j in curr_joints_deg[:5]]
+        #print(f"Initial target joints (rad): {target_joints_rad}")
 
         while True:
             t_start = time.time()
@@ -43,7 +43,8 @@ def run_rrmc():
                     robot.move_to_home_position()
                     continue 
 
-                curr_joints_deg = robot.get_joint_values()              
+                curr_joints_deg = robot.get_joint_values()
+                curr_joints_rad = np.deg2rad(curr_joints_deg[:5])           
                 vel = [cmd.arm_vx, cmd.arm_vy, cmd.arm_vz]
                 
                 if all(abs(v) < 0.01 for v in vel):
@@ -51,10 +52,11 @@ def run_rrmc():
                     pass
                 else:
                     # Integrate velocity to update target position
-                    target_joints_rad = model.calc_velocity_kinematics(target_joints_rad, vel, dt=dt)
+                    curr_joints_rad = model.calc_velocity_kinematics(curr_joints_rad, vel, dt=dt)
 
-                new_joints_rad = target_joints_rad
+                new_joints_rad = curr_joints_rad
                 new_joints_deg = np.rad2deg(new_joints_rad)
+                print(new_joints_deg)
 
                 # Need to add 6th joint position, though not controlled via rrmc. Use same as current value
                 all_joints_deg = np.append(new_joints_deg, curr_joints_deg[5])
