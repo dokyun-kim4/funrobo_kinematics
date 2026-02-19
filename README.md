@@ -28,7 +28,8 @@ Video below shows a sample demonstration
 $ python scripts/hiwonder.py
 ```
 For velocity control, activate VK using the button on the left panel. Then, control the velocity through keyboard input.  
-Video below shows a sample demonstration
+Video below shows a sample demonstration  
+
 [![FVK Demo Video](http://img.youtube.com/vi/gagwGi68yLU/0.jpg)](http://www.youtube.com/watch?v=gagwGi68yLU "FVK Demo")
 
 ### Running the RRMC on real hardware
@@ -46,5 +47,6 @@ $ python scripts/hiwonder_rrmc.py
 ```
 
 The robot can be controlled using the gamepad.  
-Video below shows a sample demonstration
+Video below shows a sample demonstration  
+
 [![FVK HW Demo Video](http://img.youtube.com/vi/UIM5e9WNGxA/0.jpg)](http://www.youtube.com/watch?v=UIM5e9WNGxA "FVK HW Demo")
