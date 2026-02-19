@@ -9,7 +9,7 @@ Ensure the environment is set up correctly following the instructions in the [ma
 
 ## How to run
 
-### 1. Running the FPK simulation
+### Part 1. Running the FPK simulation
 
 ```bash
 # For HiWonder
@@ -21,9 +21,9 @@ $ python scripts/kinova.py
 The robot can be controlled using the sliders on the left panel.  
 Video below shows a sample demonstration  
 
-[![FPK Demo Video](http://img.youtube.com/vi/YY2ypagi3Zw/0.jpg)](http://www.youtube.com/watch?v=YY2ypagi3Zw "FPK Demo")
+[![FPK Demo Video](http://img.youtube.com/vi/63GgDXNbL8M/0.jpg)](http://www.youtube.com/watch?v=63GgDXNbL8M "FPK Demo")
 
-### 2. Running the RRMC simulation
+### Part 2. Running the RRMC simulation
 ```bash
 $ python scripts/hiwonder.py
 ```
@@ -32,7 +32,7 @@ Video below shows a sample demonstration
 
 [![FVK Demo Video](http://img.youtube.com/vi/gagwGi68yLU/0.jpg)](http://www.youtube.com/watch?v=gagwGi68yLU "FVK Demo")
 
-### Running the RRMC on real hardware
+### Part 3. Running the RRMC on real hardware
 ```bash
 # SSH into the robot
 $ ssh pi@<hostname>.local
