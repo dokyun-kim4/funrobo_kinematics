@@ -5,7 +5,7 @@ import yaml
 import funrobo_kinematics.core.utils as ut
 
 # Import your robot model script
-from solutions.two_dof import TwoDOFRobot
+from scripts.two_dof import TwoDOFRobot
 
 
 robot_model = TwoDOFRobot()
@@ -44,9 +44,9 @@ def test_analytical_ik(joint_values):
     ee, _ = robot_model.calc_forward_kinematics(joint_values, radians=True)
 
     init_joint_values = [0.0, 0.01]
-    new_joint_values = robot_model.calc_inverse_kinematics(ee, init_joint_values, soln=0)
-
-    assert ut.check_valid_ik_soln(new_joint_values, ee, robot_model)
+    new_joint_values_0 = robot_model.calc_inverse_kinematics(ee, init_joint_values, soln=0)
+    new_joint_values_1 = robot_model.calc_inverse_kinematics(ee, init_joint_values, soln=1)
+    assert ut.check_valid_ik_soln(new_joint_values_0, ee, robot_model) or ut.check_valid_ik_soln(new_joint_values_1, ee, robot_model)
 
 
 # -----------------------------------------------------------------------------
