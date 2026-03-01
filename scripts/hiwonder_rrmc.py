@@ -6,7 +6,7 @@ import numpy as np
 from funrobo_hiwonder.core.hiwonder import HiwonderRobot #type: ignore
 
 import funrobo_kinematics.core.utils as ut
-from funrobo_kinematics.scripts.hiwonder_model import HiWonder5DOF
+from hiwonder_model import HiWonder5DOF
 
 def run_rrmc():
     """ Main loop that reads gamepad commands and updates the robot accordingly. """
