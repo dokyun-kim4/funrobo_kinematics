@@ -162,7 +162,7 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         l1, l2, l3, l4, l5 = self.l1, self.l2, self.l3, self.l4, self.l5
 
         # Step 1: Compute wrist position
-        R_05 = ut.euler_to_rotm((ee.rotz, ee.roty, ee.rotx))
+        R_05 = ut.euler_to_rotm((ee.rotx, ee.roty, ee.rotz))
         d5 = l4 + l5
         p_ee = np.array([ee.x, ee.y, ee.z])
         print(p_ee)
@@ -179,7 +179,12 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         ## Theta 3
         S = wz - l1
         L = sqrt(r**2 + S**2)
-        beta = acos((l2**2 + l3**2 - L**2)/(2*l2*l3))
+        try:
+            beta = acos((l2**2 + l3**2 - L**2)/(2*l2*l3))
+        except ValueError:
+            print("Target is out of reach for the arm.")
+            return joint_values
+        
         th3 = pi - beta 
         
         ## Theta 2
