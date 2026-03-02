@@ -150,6 +150,62 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
                        [th5, l4+l5, 0, 0]])
         return DH
 
+    def calc_inverse_kinematics(self, ee: ut.EndEffector, joint_values: ut.List[float], soln: int = 0):
+        """
+        Calculate the inverse kinematics for the HiWonder arm.
+
+        Args:
+            ee (EndEffector): Desired end effector position and orientation.
+            joint_values (list): Current joint angles in radians.
+            soln (int): Solution index for multiple IK solutions (if applicable).
+        """
+        l1, l2, l3, l4, l5 = self.l1, self.l2, self.l3, self.l4, self.l5
+
+        # Step 1: Compute wrist position
+        R_05 = ut.euler_to_rotm((ee.rotz, ee.roty, ee.rotx))
+        d5 = l4 + l5
+        p_ee = np.array([ee.x, ee.y, ee.z])
+        print(p_ee)
+        p_wrist = p_ee - d5*R_05@np.array([0,0,1])
+        wx,wy,wz = p_wrist
+        print(p_wrist)
+
+        # Step 2: Compute theta 1-3
+
+        ## Theta 1
+        r = sqrt(wx**2 + wy**2)
+        th1 = atan2(wy, wx)
+
+        ## Theta 3
+        S = wz - l1
+        L = sqrt(r**2 + S**2)
+        beta = acos((l2**2 + l3**2 - L**2)/(2*l2*l3))
+        th3 = pi - beta 
+        
+        ## Theta 2
+        psi = atan2(S, r)
+        alpha = atan2(l3*sin(th3), l2+l3*cos(th3))
+        th2 = psi - alpha
+
+        # Step 3: Compute R_03
+        R_01 = ut.dh_to_matrix([th1, l1, 0, -pi/2])[0:3, 0:3]
+        R_12 = ut.dh_to_matrix([th2-pi/2, 0, l2, pi])[0:3, 0:3]
+        R_23 = ut.dh_to_matrix([th3, 0, l3, pi])[0:3, 0:3]
+        R_03 = R_01 @ R_12 @ R_23
+
+        # Step 4: Compute R_35
+        R_35 = R_03.T @ R_05
+
+        # Step 5: Compute theta 4-5
+        sin_th4 = R_35[0,2]
+        cos_th4 = R_35[1,2]
+        th4 = atan2(sin_th4, cos_th4)
+
+        sin_th5 = R_35[2,0]
+        cos_th5 = R_35[2,1]
+        th5 = atan2(sin_th5, cos_th5)
+        
+        return [th1, th2, th3, th4, th5]
 
 if __name__ == "__main__":
     
