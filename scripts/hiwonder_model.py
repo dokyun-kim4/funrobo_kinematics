@@ -185,7 +185,7 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
             print("Target is out of reach for the arm.")
             return joint_values
         
-        th3 = pi - beta 
+        th3 = (pi - beta) if soln == 0 else (beta - pi)
         
         ## Theta 2
         psi = atan2(S, r)
@@ -202,8 +202,8 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         R_35 = R_03.T @ R_05
 
         # Step 5: Compute theta 4-5
-        sin_th4 = R_35[0,2]
-        cos_th4 = R_35[1,2]
+        sin_th4 = R_35[1,2]
+        cos_th4 = R_35[0,2]
         th4 = atan2(sin_th4, cos_th4)
 
         sin_th5 = R_35[2,0]
