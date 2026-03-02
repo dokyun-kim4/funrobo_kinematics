@@ -202,10 +202,13 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         R_35 = R_03.T @ R_05
 
         # Step 5: Compute theta 4-5
+
+        ## Theta 4
         sin_th4 = R_35[1,2]
         cos_th4 = R_35[0,2]
         th4 = atan2(sin_th4, cos_th4)
 
+        ## Theta 5
         sin_th5 = R_35[2,0]
         cos_th5 = R_35[2,1]
         th5 = atan2(sin_th5, cos_th5)
