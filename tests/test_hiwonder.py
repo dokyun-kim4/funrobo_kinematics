@@ -4,8 +4,11 @@ import yaml
 
 import funrobo_kinematics.core.utils as ut
 
-# Import your robot model script
+
+#TODO Import your robot model script
+# ---------------------------------------
 from solutions.hiwonder import FiveDOFRobot
+# ---------------------------------------
 
 
 robot_model = FiveDOFRobot()

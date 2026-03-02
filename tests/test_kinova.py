@@ -4,8 +4,10 @@ import yaml
 
 import funrobo_kinematics.core.utils as ut
 
-# Import your robot model script
+#TODO Import your robot model script
+# ---------------------------------------
 from solutions.kinova import KinovaRobot
+# ---------------------------------------
 
 
 robot_model = KinovaRobot()
