@@ -1,4 +1,5 @@
 from math import *
+from typing import List, Tuple
 import numpy as np
 import funrobo_kinematics.core.utils as ut
 from funrobo_kinematics.core.visualizer import Visualizer, RobotSim # type: ignore
@@ -128,7 +129,62 @@ class Kinova6DOF(KinovaRobotTemplate):
             np.ndarray: The inverse Jacobian matrix.
         """
         return np.linalg.pinv(self.calc_jacobian(joint_values))
+    
+    def calc_inverse_kinematics(
+        self, ee: ut.EndEffector, joint_values: List[float], soln: int = 0
+    ):
+        # Step 1: Compute wrist position
+        l1, l2, l3, l4, l5, l6, l7 = self.l1, self.l2, self.l3, self.l4, self.l5, self.l6, self.l7
+        p_ee = np.array([ee.x, ee.y, ee.z])
+        d6 = l6 + l7
+        R_B6 = ut.euler_to_rotm((ee.rotx, ee.roty, ee.rotz))
+        p_wrist = p_ee - d6*R_B6@np.array([0,0,1])
+        wx,wy,wz = p_wrist
 
+        # Step 2: Compute theta 1-3
+
+        ## theta 1
+        th1 = atan2(wy, wx)
+        r = sqrt(wx**2 + wy**2)
+
+        ## theta 3
+        S = wz-l1
+        L = sqrt(r**2 + S**2)
+        beta = acos((l2**2 + l3**2 - L**2)/(2*l2*l3))
+        # TODO: account for multiple soln, using pi-beta for now
+        th3 = pi - beta
+
+        ## theta 2
+        psi = atan2(S,r)
+        alpha = atan2(l3*sin(th3), l2+l3*cos(th3))
+        th2 = psi - alpha
+
+        # Step 3: Compute R_B3
+
+        R_B0 = ut.dh_to_matrix([0, 0, 0, pi])[0:3, 0:3]
+        R_01 = ut.dh_to_matrix([th1, -l1-l2, 0, pi/2])[0:3, 0:3]
+        R_12 = ut.dh_to_matrix([-pi/2 + th2, 0, l3, pi])[0:3, 0:3]
+        R_23 = ut.dh_to_matrix([-pi/2 + th3, 0, 0, pi/2])[0:3, 0:3]
+        R_B3 = R_B0@R_01@R_12@R_23
+
+        # Step 4: Compute R_36
+        R_36 = R_B3.T @ R_B6
+
+        # Step 4: Compute theta 4-6
+
+        ## Theta 4
+        th4 = atan2(R_36[1,2], R_36[0,2])
+
+        ## Theta 5
+        c5 = -1*R_36[2,2]
+        # TODO: account for +/- values of s5
+        s5 = sqrt(1-c5**2)
+        th5 = atan2(s5,c5)
+
+        ## Theta 6
+        th6 = atan2(R_36[2,1], R_36[2,0])
+
+        return [th1, th2, th3, th4, th5, th6]
 
 if __name__ == "__main__":
     
