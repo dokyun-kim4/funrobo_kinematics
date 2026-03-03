@@ -1,5 +1,6 @@
 from math import *
 import numpy as np
+import random
 import funrobo_kinematics.core.utils as ut
 from funrobo_kinematics.core.visualizer import Visualizer, RobotSim
 from funrobo_kinematics.core.arm_models import FiveDOFRobotTemplate
@@ -214,6 +215,36 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         th5 = atan2(sin_th5, cos_th5)
         
         return [th1, th2, th3, th4, th5]
+
+    def calc_numerical_ik(self, ee: ut.EndEffector, joint_values: ut.List[float], tol: float = 0.002, ilimit: int = 1000):
+
+        # Arm is underactuated, only do position IK
+        p_ee = np.array([ee.x, ee.y, ee.z])
+        # Get initial guess of joint values; ensure they are sampled from valid joint values.
+        lim = [
+                [-2*np.pi / 3, 2*np.pi / 3],
+                [-2*np.pi / 3, 2*np.pi / 3],
+                [-2*np.pi / 3, 2*np.pi / 3],
+                [-2*np.pi / 3, 2*np.pi / 3],
+                [-2*np.pi / 3, 2*np.pi / 3]
+              ]
+        
+        while True:
+            guess = [
+                    random.uniform(*lim[0]), 
+                    random.uniform(*lim[1]),
+                    random.uniform(*lim[2]),
+                    random.uniform(*lim[3]),
+                    random.uniform(*lim[4]),
+                    ]
+            icount = 0
+            while icount < ilimit:
+                fk_result, _ = self.calc_forward_kinematics(guess, True)
+                diff = p_ee - np.array([fk_result.x, fk_result.y, fk_result.z])
+                if np.linalg.norm(diff) < tol and ut.check_joint_limits(guess, lim):
+                    return guess
+                guess += self.calc_inv_jacobian(guess)@diff
+                icount += 1
 
 if __name__ == "__main__":
     
