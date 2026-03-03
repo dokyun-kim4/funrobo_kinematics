@@ -53,14 +53,14 @@ def test_analytical_ik(joint_values):
 # Python test for numerical inverse kinematics
 # -----------------------------------------------------------------------------
 
-# @pytest.mark.parametrize("joint_values", joint_values_list, ids=ids)
-# def test_numerical_ik(joint_values):
-#     ee, _ = robot_model.calc_forward_kinematics(joint_values, radians=True)
+@pytest.mark.parametrize("joint_values", joint_values_list, ids=ids)
+def test_numerical_ik(joint_values):
+    ee, _ = robot_model.calc_forward_kinematics(joint_values, radians=True)
 
-#     init_joint_values = [0.05, 0.1]
-#     new_joint_values = robot_model.calc_numerical_ik(ee, init_joint_values)
+    init_joint_values = [0.05, 0.1]
+    new_joint_values = robot_model.calc_numerical_ik(ee, init_joint_values)
 
-#     assert ut.check_valid_ik_soln(new_joint_values, ee, robot_model)
+    assert ut.check_valid_ik_soln(new_joint_values, ee, robot_model)
 
 
 # -----------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 from math import *
+import random
 import numpy as np
 import funrobo_kinematics.core.utils as ut
 from funrobo_kinematics.core.visualizer import Visualizer, RobotSim
@@ -57,8 +58,52 @@ class TwoDOFRobot(TwoDOFRobotTemplate):
         th1 = gamma - alpha
 
         return [th1, th2]
+    
+    def jacobian(self, joint_values: list):
+        """
+        Returns the Jacobian matrix for the robot. 
 
+        Args:
+            joint_values (list): The joint angles for the robot.
 
+        Returns:
+            np.ndarray: The Jacobian matrix (2x2).
+        """
+        
+        return np.array([
+            [-self.l1 * sin(joint_values[0]) - self.l2 * sin(joint_values[0] + joint_values[1]), 
+             -self.l2 * sin(joint_values[0] + joint_values[1])],
+            [self.l1 * cos(joint_values[0]) + self.l2 * cos(joint_values[0] + joint_values[1]), 
+             self.l2 * cos(joint_values[0] + joint_values[1])]
+        ])
+    
+
+    def inverse_jacobian(self, joint_values: list):
+        """
+        Returns the inverse of the Jacobian matrix.
+
+        Returns:
+            np.ndarray: The inverse Jacobian matrix.
+        """
+        return np.linalg.pinv(self.jacobian(joint_values))
+
+    def calc_numerical_ik(self, ee: ut.EndEffector, joint_values: ut.List[float], tol: float = 0.002, ilimit: int = 1000):
+        
+        p_ee = np.array([ee.x, ee.y])
+        # Get initial guess of th1, th2 within joint limits
+        lim = [[-pi, pi], [-pi + 0.261, pi - 0.261]]
+        while True:
+            guess = [random.uniform(*lim[0]), random.uniform(*lim[1])]
+            icount = 0
+            while icount < ilimit:
+                print(icount)
+                fk_result, _ = self.calc_forward_kinematics(guess, True)
+                diff = p_ee - np.array([fk_result.x, fk_result.y])
+                if np.linalg.norm(diff) < tol and ut.check_joint_limits(guess, lim):
+                    return guess
+                guess += self.inverse_jacobian(guess)@diff
+                icount += 1
+        
 if __name__ == "__main__":
     model = TwoDOFRobot()
     robot = RobotSim(robot_model=model)
