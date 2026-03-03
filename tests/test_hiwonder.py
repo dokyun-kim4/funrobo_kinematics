@@ -7,11 +7,11 @@ import funrobo_kinematics.core.utils as ut
 
 #TODO Import your robot model script
 # ---------------------------------------
-from solutions.hiwonder import FiveDOFRobot
+from scripts.hiwonder_model import HiWonder5DOF
 # ---------------------------------------
 
 
-robot_model = FiveDOFRobot()
+robot_model = HiWonder5DOF()
 N = 100 # number of sample tries
 
 

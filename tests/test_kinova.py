@@ -6,11 +6,11 @@ import funrobo_kinematics.core.utils as ut
 
 #TODO Import your robot model script
 # ---------------------------------------
-from solutions.kinova import KinovaRobot
+from scripts.kinova_model import Kinova6DOF
 # ---------------------------------------
 
 
-robot_model = KinovaRobot()
+robot_model = Kinova6DOF()
 N = 100 # number of sample tries
 
 
