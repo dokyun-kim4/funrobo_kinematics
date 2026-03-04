@@ -47,35 +47,29 @@ def test_analytical_ik(joint_values):
     ee, _ = robot_model.calc_forward_kinematics(joint_values, radians=True)
 
     init_joint_values = ut.sample_valid_joints(robot_model)
-    new_joint_values_1 = robot_model.calc_inverse_kinematics(ee, init_joint_values, soln=0)
-    new_joint_values_2 = robot_model.calc_inverse_kinematics(ee, init_joint_values, soln=1)
-    new_joint_values_3 = robot_model.calc_inverse_kinematics(ee, init_joint_values, soln=2)
-    new_joint_values_4 = robot_model.calc_inverse_kinematics(ee, init_joint_values, soln=3)
+    num_solns = 4
+    solns = [robot_model.calc_inverse_kinematics(ee, init_joint_values, soln=i) for i in range(num_solns)]
 
     print(f"Joint configuration: {joint_values}")
-    print(f"Solution 1: {new_joint_values_1}")
-    print(f"Solution 2: {new_joint_values_2}")
-    print(f"Solution 3: {new_joint_values_3}")
-    print(f"Solution 4: {new_joint_values_4}")
+    for i, soln in enumerate(solns):
+        print(f"Solution {i+1}: {soln}")
 
-    assert ut.check_valid_ik_soln(new_joint_values_1, ee, robot_model) or \
-           ut.check_valid_ik_soln(new_joint_values_2, ee, robot_model) or \
-           ut.check_valid_ik_soln(new_joint_values_3, ee, robot_model) or \
-           ut.check_valid_ik_soln(new_joint_values_4, ee, robot_model)
+    assert any([ut.check_valid_ik_soln(soln, ee, robot_model) for soln in solns])
+
 
 
 # -----------------------------------------------------------------------------
 # Python test for numerical inverse kinematics
 # -----------------------------------------------------------------------------
 
-#@pytest.mark.parametrize("joint_values", joint_values_list, ids=ids)
-#def test_numerical_ik(joint_values):
-#    ee, _ = robot_model.calc_forward_kinematics(joint_values, radians=True)
-#
-#    init_joint_values = ut.sample_valid_joints(robot_model)
-#    new_joint_values = robot_model.calc_numerical_ik(ee, init_joint_values)
-#
-#    assert ut.check_valid_ik_soln(new_joint_values, ee, robot_model)
+@pytest.mark.parametrize("joint_values", joint_values_list, ids=ids)
+def test_numerical_ik(joint_values):
+   ee, _ = robot_model.calc_forward_kinematics(joint_values, radians=True)
+
+   init_joint_values = ut.sample_valid_joints(robot_model)
+   new_joint_values = robot_model.calc_numerical_ik(ee, init_joint_values)
+
+   assert ut.check_valid_ik_soln(new_joint_values, ee, robot_model)
 
 
 # @pytest.mark.parametrize("joint_values", joint_values_list, ids=ids)

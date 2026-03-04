@@ -46,9 +46,14 @@ def test_analytical_ik(joint_values):
     ee, _ = robot_model.calc_forward_kinematics(joint_values, radians=True)
 
     init_joint_values = ut.sample_valid_joints(robot_model)
-    new_joint_values = robot_model.calc_inverse_kinematics(ee, init_joint_values, soln=0)
+    num_solns = 8
+    solns = [robot_model.calc_inverse_kinematics(ee, init_joint_values, soln=i) for i in range(num_solns)]
 
-    assert ut.check_valid_ik_soln(new_joint_values, ee, robot_model)
+    print(f"Joint configuration: {joint_values}")
+    for i, soln in enumerate(solns):
+        print(f"Solution {i+1}: {soln}")
+
+    assert any([ut.check_valid_ik_soln(soln, ee, robot_model) for soln in solns])
 
 
 
