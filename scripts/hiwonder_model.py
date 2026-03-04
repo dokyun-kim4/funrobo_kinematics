@@ -154,6 +154,7 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
     def calc_inverse_kinematics(self, ee: ut.EndEffector, joint_values: ut.List[float], soln: int = 0):
         """
         Calculate the inverse kinematics for the HiWonder arm.
+        NOTE: There will be 4 solutions for the arm
 
         Args:
             ee (EndEffector): Desired end effector position and orientation.
@@ -186,7 +187,9 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         S = wz - l1
         L = sqrt(r**2 + S**2)
         try:
-            beta = acos((l2**2 + l3**2 - L**2)/(2*l2*l3))
+            beta_cos = (l2**2 + l3**2 - L**2)/(2*l2*l3)
+            print(beta_cos)
+            beta = acos(beta_cos)
         except ValueError:
             print("Target is out of reach for the arm.")
             return joint_values
