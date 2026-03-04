@@ -133,9 +133,23 @@ class Kinova6DOF(KinovaRobotTemplate):
     def calc_inverse_kinematics(
         self, ee: ut.EndEffector, joint_values: List[float], soln: int = 0
     ):
+        """
+        Calculate the inverse kinematics for the HiWonder arm.
+        NOTE: There will be 8 solutions for the arm
+
+        Args:
+            ee (EndEffector): Desired end effector position and orientation.
+            joint_values (list): Current joint angles in radians.
+            soln (int): Solution index for multiple IK solutions (if applicable).
+        """
+        base_config = (soln // 4) % 2 # 00001111
+        elbow_config = (soln // 2) % 2 # 00110011
+        wrist_config = soln % 2 # 01010101
+
         # Step 1: Compute wrist position
         l1, l2, l3, l4, l5, l6, l7 = self.l1, self.l2, self.l3, self.l4, self.l5, self.l6, self.l7
         p_ee = np.array([ee.x, ee.y, ee.z])
+        print(f"Desired end effector position: {p_ee}")
         d6 = l6 + l7
         R_B6 = ut.euler_to_rotm((ee.rotx, ee.roty, ee.rotz))
         p_wrist = p_ee - d6*R_B6@np.array([0,0,1])
@@ -144,29 +158,43 @@ class Kinova6DOF(KinovaRobotTemplate):
         # Step 2: Compute theta 1-3
 
         ## theta 1
-        th1 = atan2(wy, wx)
-        r = sqrt(wx**2 + wy**2)
+        if base_config == 0:
+            # Note the negative sign in front of atan2 is to account for the flipped z axis on joint 1
+            th1 = -1*atan2(wy, wx)
+            r = sqrt(wx**2 + wy**2)
+        else:
+            th1 = -1*atan2(-wy, -wx)
+            r = -sqrt(wx**2 + wy**2)
+
+        d1 = l1 + l2
+        S = wz - d1
+        L = sqrt(r**2 + S**2)
+        try:
+            beta_cos = (l3**2 + (l4+l5)**2 - L**2)/(2*l3*(l4+l5))
+            beta = acos(beta_cos)
+        except ValueError:
+            print("Target is out of reach for the arm.")
+            return joint_values
 
         ## theta 3
-        S = wz-l1
-        L = sqrt(r**2 + S**2)
-        beta = acos((l2**2 + l3**2 - L**2)/(2*l2*l3))
-        # TODO: account for multiple soln, using pi-beta for now
-        th3 = pi - beta
-
+        if elbow_config == 0:
+            th3 = pi - beta
+        else:
+            th3 = beta - pi
+        
         ## theta 2
         psi = atan2(S,r)
-        alpha = atan2(l3*sin(th3), l2+l3*cos(th3))
-        th2 = psi - alpha
+        alpha = atan2((l4+l5)*sin(th3), l3+(l4+l5)*cos(th3))
+        th2 = ut.wraptopi(pi/2 - psi + alpha)
 
         # Step 3: Compute R_B3
-
         R_B0 = ut.dh_to_matrix([0, 0, 0, pi])[0:3, 0:3]
         R_01 = ut.dh_to_matrix([th1, -l1-l2, 0, pi/2])[0:3, 0:3]
         R_12 = ut.dh_to_matrix([-pi/2 + th2, 0, l3, pi])[0:3, 0:3]
         R_23 = ut.dh_to_matrix([-pi/2 + th3, 0, 0, pi/2])[0:3, 0:3]
         R_B3 = R_B0@R_01@R_12@R_23
 
+        R_23 = ut.dh_to_matrix([-pi/2 + th3, 0, 0, pi/2])[0:3, 0:3]
         # Step 4: Compute R_36
         R_36 = R_B3.T @ R_B6
 
@@ -177,8 +205,11 @@ class Kinova6DOF(KinovaRobotTemplate):
 
         ## Theta 5
         c5 = -1*R_36[2,2]
-        # TODO: account for +/- values of s5
-        s5 = sqrt(1-c5**2)
+        if wrist_config == 0:
+            s5 = sqrt(1-c5**2)   
+        else:
+            s5 = -1 * sqrt(1-c5**2)
+
         th5 = atan2(s5,c5)
 
         ## Theta 6
