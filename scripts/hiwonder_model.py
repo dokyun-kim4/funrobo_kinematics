@@ -162,20 +162,25 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         """
         l1, l2, l3, l4, l5 = self.l1, self.l2, self.l3, self.l4, self.l5
 
+        th1_config = soln // 2
+        elbow_config = soln % 2
+
         # Step 1: Compute wrist position
         R_05 = ut.euler_to_rotm((ee.rotx, ee.roty, ee.rotz))
         d5 = l4 + l5
         p_ee = np.array([ee.x, ee.y, ee.z])
-        print(p_ee)
         p_wrist = p_ee - d5*R_05@np.array([0,0,1])
         wx,wy,wz = p_wrist
-        print(p_wrist)
 
         # Step 2: Compute theta 1-3
 
         ## Theta 1
-        r = sqrt(wx**2 + wy**2)
-        th1 = atan2(wy, wx)
+        if th1_config == 0:
+            th1 = atan2(wy, wx)
+            r = sqrt(wx**2 + wy**2)
+        else:
+            th1 = atan2(-wy, -wx)
+            r = -sqrt(wx**2 + wy**2)
 
         ## Theta 3
         S = wz - l1
@@ -185,14 +190,17 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         except ValueError:
             print("Target is out of reach for the arm.")
             return joint_values
-        
-        th3 = (pi - beta) if soln == 0 else (beta - pi)
-        
+
+        if elbow_config == 0:
+            th3 = pi - beta
+        else:
+            th3 = beta - pi
+
         ## Theta 2
         psi = atan2(S, r)
         alpha = atan2(l3*sin(th3), l2+l3*cos(th3))
-        th2 = psi - alpha
-
+        th2 = ut.wraptopi(pi/2 - psi + alpha)
+        
         # Step 3: Compute R_03
         R_01 = ut.dh_to_matrix([th1, l1, 0, -pi/2])[0:3, 0:3]
         R_12 = ut.dh_to_matrix([th2-pi/2, 0, l2, pi])[0:3, 0:3]
