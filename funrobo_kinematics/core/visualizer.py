@@ -42,6 +42,7 @@ Notes for teaching:
 
 import math
 import time
+import os, sys
 from typing import List, Tuple
 
 import numpy as np
@@ -55,6 +56,7 @@ import yaml
 from pynput import keyboard
 
 from funrobo_kinematics.core.utils import EndEffector, wraptopi
+from funrobo_kinematics.core.trajector_gen import MultiAxisTrajectoryGenerator
 
 
 class Visualizer:
@@ -445,7 +447,7 @@ class Visualizer:
         """
         print('\nUpdating waypoints...')
 
-        with open('waypoints.yml', 'r') as file:
+        with open('data/waypoints.yml', 'r') as file:
             waypoints = yaml.safe_load(file)
 
         self.waypoint_idx = 0
@@ -465,15 +467,15 @@ class Visualizer:
         q0 = waypoints[0]
         qf = waypoints[1]
 
-        traj = MultiAxisTrajectoryGenerator(  # type: ignore[name-defined]
-            method="quintic", mode="task", interval=[0, 1], ndof=len(q0), start_pos=q0, final_pos=qf
+        traj = MultiAxisTrajectoryGenerator(  
+            method="cubic", mode="task", interval=[0, 1], ndof=len(q0), start_pos=q0, final_pos=qf
         )
         traj_dofs = traj.generate(nsteps=50)
 
         for i in range(50):
             pos = [dof[0][i] for dof in traj_dofs]
             ee = EndEffector(*pos, 0, -math.pi/2, wraptopi(math.atan2(pos[1], pos[0]) + math.pi))
-            self.update_IK(ee, soln=0, numerical=False, display_traj=True)
+            self.update_IK(ee, soln=0, numerical=True, display_traj=True)
             time.sleep(0.05)
 
     
@@ -490,8 +492,8 @@ class Visualizer:
         EE_0 = EndEffector(*waypoints[0], 0, 0, 0)
         EE_f = EndEffector(*waypoints[1], 0, 0, 0)
 
-        q0 = np.rad2deg(self.robot.solve_inverse_kinematics(EE_0))
-        qf = np.rad2deg(self.robot.solve_inverse_kinematics(EE_f))
+        q0 = np.rad2deg(self.robot.model.calc_inverse_kinematics(EE_0))
+        qf = np.rad2deg(self.robot.model.calc_inverse_kinematics(EE_f))
 
         traj = MultiAxisTrajectoryGenerator(  # type: ignore[name-defined]
             method="quintic", mode="task", interval=[0, 1], ndof=len(q0), start_pos=q0, final_pos=qf
@@ -607,17 +609,18 @@ class RobotSim:
         self.point_x, self.point_y, self.point_z = [], [], []
         self.waypoint_x, self.waypoint_y, self.waypoint_z = [], [], []
         self.waypoint_rotx, self.waypoint_roty, self.waypoint_rotz = [], [], []
+        self.joint_trajectory = []
         self.show_animation = show_animation
         self.plot_limits = [0.65, 0.65, 0.8]
 
         # ----------------------------
         # Obstacles (visual only)
         # ----------------------------
-        self.obstacles = []  # list of dicts describing obstacles
+        # self.obstacles = []  # list of dicts describing obstacles
 
-        # Optional: add a couple defaults so you see something immediately
-        self.add_cylinder_obstacle(center=[0.20, 0.10, 0.12], radius=0.04, height=0.24, axis="z", alpha=0.35)
-        self.add_box_obstacle(center=[-0.18, 0.18, 0.08], size=[0.12, 0.10, 0.16], alpha=0.25)
+        # # Optional: add a couple defaults so you see something immediately
+        # self.add_cylinder_obstacle(center=[0.20, 0.10, 0.12], radius=0.04, height=0.24, axis="z", alpha=0.35)
+        # self.add_box_obstacle(center=[-0.18, 0.18, 0.08], size=[0.12, 0.10, 0.16], alpha=0.25)
 
         if self.show_animation:
             self.fig = Figure(figsize=(12, 10), dpi=100)
@@ -688,8 +691,25 @@ class RobotSim:
         self.plot_3D()
 
     
+    def plot_ee_trajectory(self):
+        xlist, ylist, zlist = [], [], []
+
+        for joint_values in self.joint_trajectory:
+            ee_position = self.model.calc_forward_kinematics(joint_values, radians=True)
+            xlist.append(ee_position[0])
+            ylist.append(ee_position[1])
+            zlist.append(ee_position[2])
+
+        # draw the points
+        self.sub1.plot(xlist, ylist, zlist, 'bo', markersize=2)
+
+
+    def update_ee_trajectory(self):
+        self.joint_trajectory.append(self.get_joint_values()) # add the latest thetalist
+
+
     def reset_ee_trajectory(self):
-        self.theta_traj = []
+        self.joint_trajectory.clear()
         
 
     def draw_line_3D(self, p1: List[float], p2: List[float], format_type: str = "k-") -> None:
@@ -761,6 +781,13 @@ class RobotSim:
             # self.waypoint_rotz.append(waypoints[i][5])
 
 
+    def get_waypoints(self):
+        return [
+            [self.waypoint_x[0], self.waypoint_y[0], self.waypoint_z[0]],
+            [self.waypoint_x[1], self.waypoint_y[1], self.waypoint_z[1]]
+        ]
+   
+   
     def plot_3D(self) -> None:
         """
         Redraw the full 3D visualization frame.
@@ -778,7 +805,7 @@ class RobotSim:
         self.point_y.clear()
         self.point_z.clear()
 
-        self.draw_obstacles()
+        # self.draw_obstacles()
 
         EE = self.model.ee
 
@@ -787,7 +814,7 @@ class RobotSim:
             self.draw_line_3D(self.model.points[i], self.model.points[i+1], "k-")
 
         for i in range(len(self.model.points)-1):
-            self.draw_cylinder_3D(self.model.points[i], self.model.points[i+1], radius=0.025, resolution=28, alpha=0.75)
+            self.draw_cylinder_3D(self.model.points[i], self.model.points[i+1], radius=0.03, resolution=28, alpha=0.5)
 
         # draw the points
         for i in range(len(self.model.points)):
@@ -837,24 +864,19 @@ class RobotSim:
         self.sub1.set_ylabel('y [m]')
 
 
-    def _to_xyz(self, p):
-        """Convert a point to a (3,) xyz vector. Supports xyz or homogeneous xyzw."""
-        p = np.asarray(p, dtype=float).reshape(-1)
+    def get_joint_values(self) -> List[float]:
+        """
+        Return a copy of the model's current joint values.
 
-        if p.size == 3:
-            return p
-        if p.size == 4:
-            # Homogeneous coordinate handling
-            w = p[3]
-            if abs(w) > 1e-12:
-                return p[:3] / w
-            return p[:3]  # if w==0, treat as direction-ish; best effort
-        raise ValueError(f"Expected point of length 3 or 4, got shape {p.shape} with size {p.size}: {p}")
+        Returns:
+            list[float]: Joint values (radians internally).
+        """
+        return self.model.joint_values.copy()
 
 
     def cylinder_between(self, p1, p2, radius=0.015, resolution=24):
-        p1 = self._to_xyz(p1)
-        p2 = self._to_xyz(p2)
+        p1 = p1[:3]
+        p2 = p2[:3]
 
         v = p2 - p1
         L = np.linalg.norm(v)
@@ -892,22 +914,13 @@ class RobotSim:
         if mesh is None:
             return
         X, Y, Z = mesh
-        self.sub1.plot_surface(X, Y, Z, alpha=alpha, linewidth=0, antialiased=True)
+        self.sub1.plot_surface(X, Y, Z, alpha=alpha, linewidth=0, color='b', antialiased=True)
 
-
-    def get_joint_values(self) -> List[float]:
-        """
-        Return a copy of the model's current joint values.
-
-        Returns:
-            list[float]: Joint values (radians internally).
-        """
-        return self.model.joint_values.copy()
-    
 
     def clear_obstacles(self) -> None:
         """Remove all obstacles."""
         self.obstacles.clear()
+
 
     def add_cylinder_obstacle(
         self,
@@ -939,6 +952,7 @@ class RobotSim:
             "alpha": float(alpha),
         })
 
+
     def add_box_obstacle(
         self,
         center,
@@ -966,7 +980,7 @@ class RobotSim:
         })
 
 
-    def _cylinder_mesh(self, center, radius, height, axis="z", resolution=32):
+    def cylinder_mesh(self, center, radius, height, axis="z", resolution=32):
         """
         Returns X,Y,Z for a cylinder surface centered at `center`.
         Axis-aligned cylinder.
@@ -997,7 +1011,8 @@ class RobotSim:
         else:
             raise ValueError("axis must be 'x', 'y', or 'z'")
 
-    def _box_faces(self, center, size):
+
+    def box_faces(self, center, size):
         """
         Create 6 surfaces (faces) for an axis-aligned box.
         Returns list of (X,Y,Z) each 2x2.
@@ -1055,6 +1070,7 @@ class RobotSim:
         ))
 
         return faces
+
 
     def draw_obstacles(self) -> None:
         """

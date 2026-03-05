@@ -155,6 +155,7 @@ def print_dataclass(obj):
     print("------------------------------------ \n")
 
 
+@dataclass
 class EndEffector:
     """
     Minimal end-effector pose container.
