@@ -240,22 +240,22 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
                 [-2*np.pi / 3, 2*np.pi / 3]
               ]
         
-        # while True:
-        guess = [
-                random.uniform(*lim[0]), 
-                random.uniform(*lim[1]),
-                random.uniform(*lim[2]),
-                random.uniform(*lim[3]),
-                random.uniform(*lim[4]),
-                ]
-        icount = 0
-        while icount < ilimit:
-            fk_result, _ = self.calc_forward_kinematics(guess, True)
-            diff = p_ee - np.array([fk_result.x, fk_result.y, fk_result.z])
-            if np.linalg.norm(diff) < tol and ut.check_joint_limits(guess, lim):
-                return guess
-            guess += self.calc_inv_jacobian(guess)@diff
-            icount += 1
+        while True:
+            guess = [
+                    random.uniform(*lim[0]), 
+                    random.uniform(*lim[1]),
+                    random.uniform(*lim[2]),
+                    random.uniform(*lim[3]),
+                    random.uniform(*lim[4]),
+                    ]
+            icount = 0
+            while icount < ilimit:
+                fk_result, _ = self.calc_forward_kinematics(guess, True)
+                diff = p_ee - np.array([fk_result.x, fk_result.y, fk_result.z])
+                if np.linalg.norm(diff) < tol and ut.check_joint_limits(guess, lim):
+                    return guess
+                guess += self.calc_inv_jacobian(guess)@diff
+                icount += 1
 
 if __name__ == "__main__":
     

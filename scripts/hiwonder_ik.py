@@ -36,7 +36,6 @@ def run_ik():
                 if cmd.arm_home:
                     time.sleep(0.2) # prevents multiple presses from registering
                     
-                    print(f"STAR JOINT HAS {len(STAR_JOINT_ANGLES)} POSES")
                     new_joints_values = np.rad2deg(STAR_JOINT_ANGLES[pose_idx % len(STAR_JOINT_ANGLES)])
                     # new_joints_values = np.rad2deg(SQUARE_JOINT_ANGLES[pose_idx % len(SQUARE_JOINT_ANGLES)])
                     # Need to add 6th joint position for gripper
@@ -93,8 +92,6 @@ if __name__ == "__main__":
 
     SQUARE_POSE_0T = [pose @ R_0T.T + d_0T.T for pose in SQUARE_POSE]
     STAR_POSE_0T = [pose @ R_0T.T + d_0T.T for pose in STAR_POSE]
-    print(STAR_POSE_0T)
-    print(SQUARE_POSE_0T)
 
     print("Precomputing IK for predefined poses...")
     SQUARE_JOINT_ANGLES = []
