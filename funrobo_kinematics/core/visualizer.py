@@ -234,34 +234,27 @@ class Visualizer:
             self.pose_button.append(position_value)
 
         # Create buttons for inverse kinematics solutions
-        self.ik1_move_button = ttk.Button(
-            self.control_frame, 
-            text="Solve 1", 
-            command=self.solve_IK1
-        )
-        self.ik1_move_button.grid(column=0, row=row_number, columnspan=1, pady=2)
+        ik_buttons_info = [
+            ("Solve 1", self.solve_IK1), ("Solve 2", self.solve_IK2), ("Solve 3", self.solve_IK3),
+            ("Solve 4", self.solve_IK4), ("Solve 5", self.solve_IK5), ("Solve 6", self.solve_IK6),
+            ("Solve 7", self.solve_IK7), ("Solve 8", self.solve_IK8), ("Num Solve", self.numerical_solve)
+        ]
 
-        self.ik2_move_button = ttk.Button(
-            self.control_frame, 
-            text="Solve 2", 
-            command=self.solve_IK2
-        )
-        self.ik2_move_button.grid(column=1, row=row_number, columnspan=1, pady=2)
-
-        self.ik3_move_button = ttk.Button(
-            self.control_frame, 
-            text="Num Solve", 
-            command=self.numerical_solve
-        )
-        self.ik3_move_button.grid(column=2, row=row_number, columnspan=1, pady=2)
+        for i, (text, cmd) in enumerate(ik_buttons_info):
+            btn = ttk.Button(self.control_frame, text=text, command=cmd)
+            r = row_number + (i // 3)
+            c = i % 3
+            btn.grid(column=c, row=r, columnspan=1, pady=2)
+        
+        row_number += 3
 
         self.ik_set_pose_button = ttk.Button(
             self.control_frame,
             text="Set Pose",
             command=self.load_current_pose
         )
-        self.ik_set_pose_button.grid(column=1, row=row_number+1, columnspan=1, pady=1)
-        row_number += 5
+        self.ik_set_pose_button.grid(column=1, row=row_number, columnspan=1, pady=1)
+        row_number += 2
         
 
         # ------------------------------------------------------------------------------------------------
@@ -360,6 +353,48 @@ class Visualizer:
         Solves the inverse kinematics for a given end-effector pose using the second solution.
         """
         self.update_IK(pose=self.get_ee_from_input(), soln=1)
+
+
+    def solve_IK3(self) -> None:
+        """
+        Solves the inverse kinematics for a given end-effector pose using the third solution.
+        """
+        self.update_IK(pose=self.get_ee_from_input(), soln=2)
+
+
+    def solve_IK4(self) -> None:
+        """
+        Solves the inverse kinematics for a given end-effector pose using the fourth solution.
+        """
+        self.update_IK(pose=self.get_ee_from_input(), soln=3)
+
+
+    def solve_IK5(self) -> None:
+        """
+        Solves the inverse kinematics for a given end-effector pose using the fifth solution.
+        """
+        self.update_IK(pose=self.get_ee_from_input(), soln=4)
+
+
+    def solve_IK6(self) -> None:
+        """
+        Solves the inverse kinematics for a given end-effector pose using the sixth solution.
+        """
+        self.update_IK(pose=self.get_ee_from_input(), soln=5)
+
+
+    def solve_IK7(self) -> None:
+        """
+        Solves the inverse kinematics for a given end-effector pose using the seventh solution.
+        """
+        self.update_IK(pose=self.get_ee_from_input(), soln=6)
+
+
+    def solve_IK8(self) -> None:
+        """
+        Solves the inverse kinematics for a given end-effector pose using the eighth solution.
+        """
+        self.update_IK(pose=self.get_ee_from_input(), soln=7)
 
 
     def numerical_solve(self) -> None:
