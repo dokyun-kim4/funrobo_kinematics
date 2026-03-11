@@ -15,7 +15,7 @@ def run_ik():
         # Initialize components
         robot = HiwonderRobot()
         
-        control_hz = 20 
+        control_hz = 20
         dt = 1 / control_hz
 
         print("Waiting for initial joint reading...")
@@ -35,13 +35,14 @@ def run_ik():
                 
                 if cmd.arm_home:
                     time.sleep(0.2) # prevents multiple presses from registering
-
-                    # new_joints_values = np.rad2deg(STAR_JOINT_ANGLES[pose_idx % len(STAR_JOINT_ANGLES)])
-                    new_joints_values = np.rad2deg(SQUARE_JOINT_ANGLES[pose_idx % len(SQUARE_JOINT_ANGLES)])
+                    
+                    print(f"STAR JOINT HAS {len(STAR_JOINT_ANGLES)} POSES")
+                    new_joints_values = np.rad2deg(STAR_JOINT_ANGLES[pose_idx % len(STAR_JOINT_ANGLES)])
+                    # new_joints_values = np.rad2deg(SQUARE_JOINT_ANGLES[pose_idx % len(SQUARE_JOINT_ANGLES)])
                     # Need to add 6th joint position for gripper
                     all_joints_deg = np.append(new_joints_values, [0.0])
 
-                    robot.set_joint_values(all_joints_deg, duration=dt, radians=False)
+                    robot.set_joint_values(all_joints_deg, duration=1.0, radians=False)
                     pose_idx += 1
 
             elapsed = time.time() - t_start
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     model = HiWonder5DOF()
 
     SQUARE_POSE = [
-                    np.array([0.006, 0.230, 0]),
+                    np.array([0.060, 0.230, 0]),
                     np.array([-0.060, 0.230, 0]),
                     np.array([-0.060, 0.110, 0]),
                     np.array([0.060, 0.110, 0])
@@ -88,10 +89,12 @@ if __name__ == "__main__":
                     [0, 0, 1]])
 
     R_0T = Ry_0T@Rz_0T
-    d_0T = np.array([[-0.24], [0], [0]])
+    d_0T = np.array([[-0.26], [0], [0]])
 
     SQUARE_POSE_0T = [pose @ R_0T.T + d_0T.T for pose in SQUARE_POSE]
     STAR_POSE_0T = [pose @ R_0T.T + d_0T.T for pose in STAR_POSE]
+    print(STAR_POSE_0T)
+    print(SQUARE_POSE_0T)
 
     print("Precomputing IK for predefined poses...")
     SQUARE_JOINT_ANGLES = []
@@ -100,19 +103,21 @@ if __name__ == "__main__":
     p_ee = ut.EndEffector()
     p_ee.x, p_ee.y, p_ee.z = SQUARE_POSE_0T[0][0]
 
-    SQUARE_JOINT_ANGLES.append(model.calc_numerical_ik(p_ee, initial_guess, tol=0.002, ilimit=1000))
+    SQUARE_JOINT_ANGLES.append(model.calc_numerical_ik(p_ee, initial_guess, tol=0.01, ilimit=1000))
     for pose in SQUARE_POSE_0T[1:]:
         p_ee = ut.EndEffector()
         p_ee.x, p_ee.y, p_ee.z = pose[0]
-        SQUARE_JOINT_ANGLES.append(model.calc_numerical_ik(p_ee, SQUARE_JOINT_ANGLES[-1], tol=0.002, ilimit=1000))
+        SQUARE_JOINT_ANGLES.append(model.calc_numerical_ik(p_ee, SQUARE_JOINT_ANGLES[-1], tol=0.01, ilimit=1000))
 
+
+    STAR_JOINT_ANGLES = []
     p_ee = ut.EndEffector()
     p_ee.x, p_ee.y, p_ee.z = STAR_POSE_0T[0][0]
-    STAR_JOINT_ANGLES = []
+    STAR_JOINT_ANGLES.append(model.calc_numerical_ik(p_ee, initial_guess, tol=0.01, ilimit=1000))
     for pose in STAR_POSE_0T[1:]:
         p_ee = ut.EndEffector()
         p_ee.x, p_ee.y, p_ee.z = pose[0]
-        STAR_JOINT_ANGLES.append(model.calc_numerical_ik(p_ee, [0.0] * 6, tol=0.002, ilimit=1000))
+        STAR_JOINT_ANGLES.append(model.calc_numerical_ik(p_ee, STAR_JOINT_ANGLES[-1], tol=0.01, ilimit=1000))
 
     print("Precomputing IK for predefined poses... Done.")
     run_ik()
