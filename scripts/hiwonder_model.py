@@ -151,7 +151,7 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
                        [th5, l4+l5, 0, 0]])
         return DH
 
-    def calc_inverse_kinematics(self, ee: ut.EndEffector, joint_values: ut.List[float], soln: int = 0):
+    def calc_ik_single_soln(self, ee: ut.EndEffector, joint_values: ut.List[float], soln: int = 0):
         """
         Calculate the inverse kinematics for the HiWonder arm.
         NOTE: There will be 4 solutions for the arm
@@ -223,9 +223,16 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         ## Theta 5
         sin_th5 = R_35[2,0]
         cos_th5 = R_35[2,1]
-        th5 = atan2(sin_th5, cos_th5)
-        
+        th5 = atan2(sin_th5, cos_th5)   
         return [th1, th2, th3, th4, th5]
+    
+    def calc_inverse_kinematics(self, ee: ut.EndEffector, joint_values: ut.List[float], soln: int = 0):
+        soln_idx = [soln, (soln+1)%4, (soln+2)%4, (soln+3)%4]
+        for i in soln_idx:
+            soln_candidate = self.calc_ik_single_soln(ee, joint_values, soln = i)
+            if ut.check_valid_ik_soln(soln_candidate, ee, self):
+                return soln_candidate
+        print("No valid IK solution found for the given end effector pose.")
 
     def calc_numerical_ik(self, ee: ut.EndEffector, joint_values: ut.List[float], tol: float = 0.002, ilimit: int = 1000):
 
