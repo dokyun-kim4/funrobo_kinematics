@@ -188,7 +188,6 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         L = sqrt(r**2 + S**2)
         try:
             beta_cos = (l2**2 + l3**2 - L**2)/(2*l2*l3)
-            print(beta_cos)
             beta = acos(beta_cos)
         except ValueError:
             print("Target is out of reach for the arm.")
@@ -246,8 +245,10 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
                 [-2*np.pi / 3, 2*np.pi / 3],
                 [-2*np.pi / 3, 2*np.pi / 3]
               ]
-        
-        while True:
+        if joint_values is not None:
+            print(f"Initial guess provided {joint_values}")
+            guess = joint_values
+        else:
             guess = [
                     random.uniform(*lim[0]), 
                     random.uniform(*lim[1]),
@@ -255,6 +256,9 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
                     random.uniform(*lim[3]),
                     random.uniform(*lim[4]),
                     ]
+
+        while True:
+            
             icount = 0
             while icount < ilimit:
                 fk_result, _ = self.calc_forward_kinematics(guess, True)
