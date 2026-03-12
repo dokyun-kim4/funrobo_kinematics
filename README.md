@@ -9,6 +9,6 @@ Ensure the environment is set up correctly following the instructions in the [ma
 
 ## How to run
 
-[![HiWonder IK Demo Video](http://img.youtube.com/vi/iAirh9ohwHc/0.jpg)](http://www.youtube.com/watch?v=iAirh9ohwHc "HiWoder Ik Demo")
+[![HiWonder IK Demo Video](http://img.youtube.com/vi/ygeuNtyZRj8/0.jpg)](http://www.youtube.com/watch?v=ygeuNtyZRj8 "HiWoder Ik Demo")
 
-[![Kinova IK Demo Video](http://img.youtube.com/vi/kSBm-yrM6cE/0.jpg)](http://www.youtube.com/watch?v=kSBm-yrM6cE "Kinova IK Demo")
+[![Kinova IK Demo Video](http://img.youtube.com/vi/N38wuKvfXoc/0.jpg)](http://www.youtube.com/watch?v=N38wuKvfXoc "Kinova IK Demo")
