@@ -151,7 +151,7 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
                        [th5, l4+l5, 0, 0]])
         return DH
 
-    def calc_inverse_kinematics(self, ee: ut.EndEffector, joint_values: ut.List[float], soln: int = 0):
+    def calc_ik_single_soln(self, ee: ut.EndEffector, joint_values: ut.List[float], soln: int = 0):
         """
         Calculate the inverse kinematics for the HiWonder arm.
         NOTE: There will be 4 solutions for the arm
@@ -188,7 +188,6 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         L = sqrt(r**2 + S**2)
         try:
             beta_cos = (l2**2 + l3**2 - L**2)/(2*l2*l3)
-            print(beta_cos)
             beta = acos(beta_cos)
         except ValueError:
             print("Target is out of reach for the arm.")
@@ -223,9 +222,16 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
         ## Theta 5
         sin_th5 = R_35[2,0]
         cos_th5 = R_35[2,1]
-        th5 = atan2(sin_th5, cos_th5)
-        
+        th5 = atan2(sin_th5, cos_th5)   
         return [th1, th2, th3, th4, th5]
+    
+    def calc_inverse_kinematics(self, ee: ut.EndEffector, joint_values: ut.List[float], soln: int = 0):
+        soln_idx = [soln, (soln+1)%4, (soln+2)%4, (soln+3)%4]
+        for i in soln_idx:
+            soln_candidate = self.calc_ik_single_soln(ee, joint_values, soln = i)
+            if ut.check_valid_ik_soln(soln_candidate, ee, self):
+                return soln_candidate
+        print("No valid IK solution found for the given end effector pose.")
 
     def calc_numerical_ik(self, ee: ut.EndEffector, joint_values: ut.List[float], tol: float = 0.002, ilimit: int = 1000):
 
@@ -239,23 +245,28 @@ class HiWonder5DOF(FiveDOFRobotTemplate):
                 [-2*np.pi / 3, 2*np.pi / 3],
                 [-2*np.pi / 3, 2*np.pi / 3]
               ]
-        
-        # while True:
-        guess = [
-                random.uniform(*lim[0]), 
-                random.uniform(*lim[1]),
-                random.uniform(*lim[2]),
-                random.uniform(*lim[3]),
-                random.uniform(*lim[4]),
-                ]
-        icount = 0
-        while icount < ilimit:
-            fk_result, _ = self.calc_forward_kinematics(guess, True)
-            diff = p_ee - np.array([fk_result.x, fk_result.y, fk_result.z])
-            if np.linalg.norm(diff) < tol and ut.check_joint_limits(guess, lim):
-                return guess
-            guess += self.calc_inv_jacobian(guess)@diff
-            icount += 1
+        if joint_values is not None:
+            print(f"Initial guess provided {joint_values}")
+            guess = joint_values
+        else:
+            guess = [
+                    random.uniform(*lim[0]), 
+                    random.uniform(*lim[1]),
+                    random.uniform(*lim[2]),
+                    random.uniform(*lim[3]),
+                    random.uniform(*lim[4]),
+                    ]
+
+        while True:
+            
+            icount = 0
+            while icount < ilimit:
+                fk_result, _ = self.calc_forward_kinematics(guess, True)
+                diff = p_ee - np.array([fk_result.x, fk_result.y, fk_result.z])
+                if np.linalg.norm(diff) < tol and ut.check_joint_limits(guess, lim):
+                    return guess
+                guess += self.calc_inv_jacobian(guess)@diff
+                icount += 1
 
 if __name__ == "__main__":
     

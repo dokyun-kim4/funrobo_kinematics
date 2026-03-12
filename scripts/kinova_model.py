@@ -130,7 +130,7 @@ class Kinova6DOF(KinovaRobotTemplate):
         """
         return np.linalg.pinv(self.calc_jacobian(joint_values))
     
-    def calc_inverse_kinematics(
+    def calc_ik_single_soln(
         self, ee: ut.EndEffector, joint_values: List[float], soln: int = 0
     ):
         """
@@ -149,7 +149,6 @@ class Kinova6DOF(KinovaRobotTemplate):
         # Step 1: Compute wrist position
         l1, l2, l3, l4, l5, l6, l7 = self.l1, self.l2, self.l3, self.l4, self.l5, self.l6, self.l7
         p_ee = np.array([ee.x, ee.y, ee.z])
-        print(f"Desired end effector position: {p_ee}")
         d6 = l6 + l7
         R_B6 = ut.euler_to_rotm((ee.rotx, ee.roty, ee.rotz))
         p_wrist = p_ee - d6*R_B6@np.array([0,0,1])
@@ -216,6 +215,15 @@ class Kinova6DOF(KinovaRobotTemplate):
         th6 = atan2(R_36[2,1], R_36[2,0])
 
         return [th1, th2, th3, th4, th5, th6]
+    
+    def calc_inverse_kinematics(self, ee: ut.EndEffector, joint_values: ut.List[float], soln: int = 0):
+        soln_idx = [soln, (soln+1)%8, (soln+2)%8, (soln+3)%8, (soln+4)%8, (soln+5)%8, (soln+6)%8, (soln+7)%8]
+        for i in soln_idx:
+            soln_candidate = self.calc_ik_single_soln(ee, joint_values, soln = i)
+            if ut.check_valid_ik_soln(soln_candidate, ee, self):
+                return soln_candidate
+        print("No valid IK solution found for the given end effector pose.")
+        return joint_values
 
 if __name__ == "__main__":
     

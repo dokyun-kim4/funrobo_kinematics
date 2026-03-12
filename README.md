@@ -8,3 +8,7 @@ In this project, we derived both analytical and numerical solutions for inverse 
 Ensure the environment is set up correctly following the instructions in the [main branch](https://github.com/dokyun-kim4/funrobo_kinematics/tree/main?tab=readme-ov-file#step-by-step-setup). 
 
 ## How to run
+
+[![HiWonder IK Demo Video](http://img.youtube.com/vi/iAirh9ohwHc/0.jpg)](http://www.youtube.com/watch?v=iAirh9ohwHc "HiWoder Ik Demo")
+
+[![Kinova IK Demo Video](http://img.youtube.com/vi/kSBm-yrM6cE/0.jpg)](http://www.youtube.com/watch?v=kSBm-yrM6cE "Kinova IK Demo")
