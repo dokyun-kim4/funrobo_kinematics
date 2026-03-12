@@ -2,14 +2,15 @@ from math import *
 import traceback
 import time
 import numpy as np
-import copy # added to fix reference mutation
+import copy
+import argparse
 
 from funrobo_hiwonder.core.hiwonder import HiwonderRobot #type: ignore
 
 import funrobo_kinematics.core.utils as ut
 from hiwonder_model import HiWonder5DOF
 
-def run_ik():
+def run_ik(joint_angles=None):
     """ Main loop that reads gamepad commands and updates the robot accordingly. """
     try:
 
@@ -37,15 +38,14 @@ def run_ik():
                 if cmd.arm_home:
                     time.sleep(0.4) # prevents multiple presses from registering
                     
-                    # new_joints_values = np.rad2deg(STAR_JOINT_ANGLES[pose_idx % len(STAR_JOINT_ANGLES)])
-                    new_joints_values = np.rad2deg(SQUARE_JOINT_ANGLES[pose_idx % len(SQUARE_JOINT_ANGLES)])
-                    #new_joints_values = np.rad2deg(WORD_JOINT_ANGLES[pose_idx % len(WORD_JOINT_ANGLES)])
-                    # Need to add 6th joint position for gripper
-                    all_joints_deg = np.append(new_joints_values, [0.0])
+                    if joint_angles is not None:
+                        new_joints_values = np.rad2deg(joint_angles[pose_idx % len(joint_angles)])
+                        # Need to add 6th joint position for gripper
+                        all_joints_deg = np.append(new_joints_values, [0.0])
 
-                    robot.set_joint_values(all_joints_deg, duration=0.5, radians=False)
+                        robot.set_joint_values(all_joints_deg, duration=0.5, radians=False)
 
-                    pose_idx += 1
+                        pose_idx += 1
 
             elapsed = time.time() - t_start
             remaining_time = dt - elapsed
@@ -62,6 +62,10 @@ def run_ik():
         robot.shutdown_robot()
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Run Hiwonder IK with specific shape')
+    parser.add_argument('--shape', type=str, default='square', choices=['square', 'star', 'word'], help='Shape to trace: square, star, or word')
+    args = parser.parse_args()
     
     # Pre-compute IK solutions for the predefined poses to speed up execution during runtime
     model = HiWonder5DOF()
@@ -157,4 +161,14 @@ if __name__ == "__main__":
         WORD_JOINT_ANGLES.append(copy.deepcopy(soln))
 
     print("Precomputing IK for predefined poses... Done.")
-    run_ik()
+
+    if args.shape == 'square':
+        target_joints = SQUARE_JOINT_ANGLES
+    elif args.shape == 'star':
+        target_joints = STAR_JOINT_ANGLES
+    elif args.shape == 'word':
+        target_joints = WORD_JOINT_ANGLES
+    else:
+        target_joints = SQUARE_JOINT_ANGLES
+
+    run_ik(target_joints)
