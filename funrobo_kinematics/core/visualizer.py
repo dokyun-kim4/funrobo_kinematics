@@ -56,8 +56,6 @@ import yaml
 from pynput import keyboard
 
 from funrobo_kinematics.core.utils import EndEffector, wraptopi
-from funrobo_kinematics.core.trajectory_gen import MultiAxisTrajectoryGenerator, MultiSegmentTrajectoryGenerator
-
 from funrobo_kinematics.core.path_planner import RobotPathPlanner
 
 class Visualizer:
@@ -170,21 +168,21 @@ class Visualizer:
         self.fk_entry_title.grid(column=0, row=row_number, columnspan=2, pady=(0, 10))
         row_number += 1
 
-        # # Create joint entry fields and labels
-        # self.joint_button = []
-        # for i in range(self.robot.num_joints):
-        #     joint_label = ttk.Label(self.control_frame, text=f"theta {i+1} (deg or m):")
-        #     joint_label.grid(column=0, row=row_number, sticky=tk.W)
-        #     joint_value = ttk.Entry(self.control_frame)
-        #     joint_value.insert(0, "0")
-        #     joint_value.grid(column=1, row=row_number)
-        #     self.joint_button.append(joint_value)
-        #     row_number += 1
+        # Create joint entry fields and labels
+        self.joint_button = []
+        for i in range(self.robot.num_joints):
+            joint_label = ttk.Label(self.control_frame, text=f"theta {i+1} (deg or m):")
+            joint_label.grid(column=0, row=row_number, sticky=tk.W)
+            joint_value = ttk.Entry(self.control_frame)
+            joint_value.insert(0, "0")
+            joint_value.grid(column=1, row=row_number)
+            self.joint_button.append(joint_value)
+            row_number += 1
 
-        # # Create the Move button
-        # self.fk_move_button = ttk.Button(self.control_frame, text="Move", command=self.joints_from_button)
-        # self.fk_move_button.grid(column=0, row=row_number, columnspan=2, pady=5)
-        # row_number += 1
+        # Create the Move button
+        self.fk_move_button = ttk.Button(self.control_frame, text="Move", command=self.joints_from_button)
+        self.fk_move_button.grid(column=0, row=row_number, columnspan=2, pady=5)
+        row_number += 1
 
         # Create the joint slider field and labels
         self.joint_scales = []
@@ -260,20 +258,6 @@ class Visualizer:
         row_number += 3
 
         # ------------------------------------------------------------------------------------------------
-        # Velocity kinematics
-        # ------------------------------------------------------------------------------------------------
-        # self.vk_entry_title = ttk.Label(self.control_frame, text="Velocity Kinematics:", font=("Arial", 13, "bold"))
-        # self.vk_entry_title.grid(column=0, row=row_number, columnspan=2, pady=(0, 10))
-        # row_number += 1
-
-        # self.vk_activate_button = ttk.Button(self.control_frame, text="Activate VK", command=self.activate_VK)
-        # self.vk_activate_button.grid(column=0, row=row_number, columnspan=1, pady=2)
-
-        # self.vk_deactivate_button = ttk.Button(self.control_frame, text="Deactivate VK", command=self.deactivate_VK)
-        # self.vk_deactivate_button.grid(column=1, row=row_number, columnspan=1, pady=2)
-        # row_number += 3
-
-        # ------------------------------------------------------------------------------------------------
         # Path Planning
         # ------------------------------------------------------------------------------------------------
         self.mp_entry_title = ttk.Label(self.control_frame, text="Path Planning:", font=("Arial", 13, "bold"))
@@ -298,39 +282,38 @@ class Visualizer:
         self.goal_config = goal_config_value
         row_number += 1
 
-        self.mp_generate_button = ttk.Button(self.control_frame, text="Generate Path", command=self.generate_path)
-        self.mp_generate_button.grid(column=0, row=row_number, columnspan=1, pady=2)
+        self.path_generate_button = ttk.Button(self.control_frame, text="Generate Path", command=self.generate_path)
+        self.path_generate_button.grid(column=0, row=row_number, columnspan=1, pady=2)
 
-        self.mp_clear_button = ttk.Button(self.control_frame, text="Clear Path", command=self.clear_path)
-        self.mp_clear_button.grid(column=1, row=row_number, columnspan=1, pady=2)
+        self.path_clear_button = ttk.Button(self.control_frame, text="Clear Path", command=self.clear_path)
+        self.path_clear_button.grid(column=1, row=row_number, columnspan=1, pady=2)
 
-        self.tg_obstacle_button = ttk.Button(self.control_frame, text="Toggle Obstacles", command=self.toggle_obstacles)
-        self.tg_obstacle_button.grid(column=2, row=row_number, columnspan=1, pady=2)
+        self.path_obstacle_button = ttk.Button(self.control_frame, text="Toggle Obstacles", command=self.toggle_obstacles)
+        self.path_obstacle_button.grid(column=2, row=row_number, columnspan=1, pady=2)
         row_number += 1
 
-
-        # ------------------------------------------------------------------------------------------------
-        # Trajectory generation
-        # ------------------------------------------------------------------------------------------------
-        self.mp_entry_title = ttk.Label(self.control_frame, text="Trajectory Generation:", font=("Arial", 13, "bold"))
-        self.mp_entry_title.grid(column=0, row=row_number, columnspan=2, pady=(0, 10))
+        self.path_follow_button = ttk.Button(self.control_frame, text="Follow Path", command=self.follow_path)
+        self.path_follow_button.grid(column=1, row=row_number, columnspan=1, pady=2)
         row_number += 1
 
-        traj_method_label = ttk.Label(self.control_frame, text=f"Select method (linear, cubic, etc.):")
-        traj_method_label.grid(column=0, row=row_number, sticky=tk.W)
-        traj_method_value = ttk.Entry(self.control_frame)
-        traj_method_value.insert(0, "")
-        traj_method_value.grid(column=1, row=row_number)
-        row_number += 1
+        # # ------------------------------------------------------------------------------------------------
+        # # Trajectory generation
+        # # ------------------------------------------------------------------------------------------------
+        # self.mp_entry_title = ttk.Label(self.control_frame, text="Trajectory Generation:", font=("Arial", 13, "bold"))
+        # self.mp_entry_title.grid(column=0, row=row_number, columnspan=2, pady=(0, 10))
+        # row_number += 1
 
-        self.mp_follow_task_button = ttk.Button(self.control_frame, text="Generate Traj (Task-space)", command=self.generate_traj_task_space)
-        self.mp_follow_task_button.grid(column=0, row=row_number, columnspan=1, pady=2)
+        # traj_method_label = ttk.Label(self.control_frame, text=f"Select method (linear, cubic, etc.):")
+        # traj_method_label.grid(column=0, row=row_number, sticky=tk.W)
+        # traj_method_value = ttk.Entry(self.control_frame)
+        # traj_method_value.insert(0, "")
+        # traj_method_value.grid(column=1, row=row_number)
+        # row_number += 1
 
-        self.mp_follow_joint_button = ttk.Button(self.control_frame, text="Generate Traj (Joint-space)", command=self.generate_traj_joint_space)
-        self.mp_follow_joint_button.grid(column=1, row=row_number, columnspan=1, pady=2)
-        row_number += 1
+        # self.mp_follow_task_button = ttk.Button(self.control_frame, text="Generate Traj (Task-space)", command=self.generate_traj_task_space)
+        # self.mp_follow_task_button.grid(column=0, row=row_number, columnspan=1, pady=2)
 
-        # self.mp_follow_joint_button = ttk.Button(self.control_frame, text="Generate Trajectory", command=self.generate_trajectory)
+        # self.mp_follow_joint_button = ttk.Button(self.control_frame, text="Generate Traj (Joint-space)", command=self.generate_traj_joint_space)
         # self.mp_follow_joint_button.grid(column=1, row=row_number, columnspan=1, pady=2)
         # row_number += 1
 
@@ -578,38 +561,8 @@ class Visualizer:
         self.robot.plot_3D()
         self.canvas.draw()
 
-    
-    def generate_traj_task_space(self):
-        """
-        Generates and visualizes a task-space trajectory using a polynomial interpolator between waypoints.
-        """
-    
-        print('\nFollowing trajectory in task space...')
-    
-        if not hasattr(self, 'path_planner'):
-            tk.messagebox.showerror("Error", "Please generate a path first!")
-            return
-        
-        points = []
-        for joint_values in self.path:
-            ee, _ = self.robot.model.calc_forward_kinematics(joint_values, radians=True)
-            points.append([ee.x, ee.y, ee.z])
-    
-        mstraj = MultiSegmentTrajectoryGenerator(  
-            method="quintic", mode="task", T=1, ndof=3, waypoints=points, nsteps=10
-        )
 
-        traj_dofs = mstraj.get_joints_by_waypoints()
-
-        for pos in traj_dofs:          
-            ee = EndEffector(*pos, 0, -math.pi/2, wraptopi(math.atan2(pos[1], pos[0]) + math.pi))
-            self.update_IK(ee, soln=0, numerical=False, display_traj=True)
-            time.sleep(0.05)
-        
-        mstraj.plot()
-
-
-    def generate_traj_joint_space(self) -> None:
+    def follow_path(self) -> None:
         """
         Generates and visualizes a joint-space trajectory by solving inverse kinematics at waypoints
         and interpolating between resulting joint configurations.
@@ -620,22 +573,13 @@ class Visualizer:
         if not hasattr(self, 'path_planner'):
             tk.messagebox.showerror("Error", "Please generate a path first!")
             return
-    
-        # mstraj = MultiSegmentTrajectoryGenerator(  
-        #     method="quintic", mode="joint", T=1, ndof=len(self.path[0]), waypoints=self.path, nsteps=20
-        # )
-
-        # self.trajectory = mstraj.get_joints_by_waypoints()
-
-        self.trajectory = self.path_planner.generate_trajectory(self.path)
 
         # for joint_values in path:
-        for joint_values in self.trajectory:
+        for joint_values in self.path:
             joint_values_deg = np.rad2deg(joint_values)
             self.update_FK(joint_values=joint_values_deg, display_traj=True) 
-            time.sleep(0.1)
-        
-        self.path_planner.plot()
+            time.sleep(0.5)
+
 
 
     def toggle_obstacles(self) -> None:
@@ -966,7 +910,7 @@ class RobotSim:
         self.plot_waypoints()
 
         # draw the EE trajectory
-        self.plot_ee_trajectory()
+        # self.plot_ee_trajectory()
 
         # draw the EE
         self.sub1.plot(EE.x, EE.y, EE.z, 'bo')
