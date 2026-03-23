@@ -493,7 +493,7 @@ class Visualizer:
         q_start = np.deg2rad(eval(self.start_config.get()))
         q_end = np.deg2rad(eval(self.goal_config.get()))
         
-        self.path = self.path_planner.plan_path(q_start, q_end, visualize=False)
+        self.path = self.path_planner.plan_path(q_start, q_end, visualize=True)
 
         if not self.path:
             tk.messagebox.showerror("Planning Error", "No path found within the time limit.")
