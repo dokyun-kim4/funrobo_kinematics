@@ -23,14 +23,14 @@ If you already have a fork of the `funrobo-kinematics` repository:
 ```base
 git remote add upstream https://github.com/OlinCollege-FunRobo/funrobo_kinematics.git
 git fetch upstream
-git checkout -b path-planning origin/path-planning
+git checkout -b path-planning upstream/path-planning
 git submodule update --init --recursive
 ```
 
 If you are just cloning the repository afresh:
 ```base
 git clone --recurse-submodules https://github.com/OlinCollege-FunRobo/funrobo_kinematics.git
-git checkout -b path-planning upstream/path-planning
+git checkout -b path-planning origin/path-planning
 ```
 
 
