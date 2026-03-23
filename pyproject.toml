@@ -15,7 +15,12 @@ dependencies = [
   "pygame",
   "pyyaml",
   "ipython",
+  "pyroboplan",
+  "pynput",
 ]
+
+[tool.uv.sources]
+pyroboplan = { path = "./libs/pyroboplan", editable = true }
 
 [tool.setuptools]
 packages = ["funrobo_kinematics"]
