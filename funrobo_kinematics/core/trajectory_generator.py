@@ -45,7 +45,7 @@ class MultiAxisTrajectoryGenerator():
             T    : duration of the trajectory
         """
         self.T = T
-        self.method.solve(q0, qf, qd0, qdf, T=T)
+        self.method.solve(q0, qf, qd0, qdf, qdd0, qddf, T=T)
 
     
     def generate(self, nsteps=100):
@@ -162,8 +162,10 @@ class MultiSegmentTrajectoryGenerator():
 
             print(f"Segment {i+1}: q0={q0}, qf={qf}, qd0={qd0}, qdf={qdf}")
 
+            qdd0, qddf = np.zeros(self.ndof), np.zeros(self.ndof)
+
             model = type(self.method)(ndof=self.ndof) # creates a new instance of the trajectory gen class
-            model.solve(q0, qf, qd0, qdf, T=T)
+            model.solve(q0, qf, qd0, qdf, qdd0, qddf, T=T)
             self.segment_models.append(model)
 
     
