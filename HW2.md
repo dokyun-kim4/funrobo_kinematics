@@ -7,7 +7,7 @@ For this assignment, I implemented two types of trajectory generation methods:
 2. Trapezoidal
 
 ## Quintic Polynomial
-The implementation of the quintic polynomial generation method can be found [here]().
+The implementation of the quintic polynomial generation method can be found [here](https://github.com/dokyun-kim4/funrobo_kinematics/blob/6ca45612e42a4d8671d23105357950112a13fb3f/examples/traj_gen.py#L91).
 
 The image below shows the generated position, velocity, acceleration plots for both task-space and joint-space trajectories.
 
@@ -21,7 +21,7 @@ The video below demonstrates the simulated 5DOF arm following the two different 
 [![Task Space Demo Video](http://img.youtube.com/vi/plk7u-3Vp0Y/0.jpg)](http://www.youtube.com/watch?v=plk7u-3Vp0Y "Task Space Demo")
 
 ## Trapezoidal
-The implementation of the trapezoidal generation method can be found [here]().
+The implementation of the trapezoidal generation method can be found [here](https://github.com/dokyun-kim4/funrobo_kinematics/blob/6ca45612e42a4d8671d23105357950112a13fb3f/examples/traj_gen.py#L182).
 
 The image below shows the generated position, velocity, and acceleration plots for both task-space and joint-space trajectories
 
