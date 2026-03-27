@@ -128,18 +128,32 @@ class Visualizer:
         - Left: control panel frame (Tk widgets)
         - Right: plot frame embedding the robot's Matplotlib figure
         """
+
+        self.root.minsize(1200, 900) # set the minimum widget/window size
+
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_columnconfigure(1, weight=3)
+
         # Create the control frame for the GUI
         self.control_frame = ttk.Frame(self.root)
-        self.control_frame.grid(row=0, column=0, padx=15, pady=15)
+        self.control_frame.grid(row=0, column=0, padx=15, pady=15, sticky="nsew")
         
         # Create the plot frame for the GUI
         self.plot_frame = ttk.Frame(self.root)
-        self.plot_frame.grid(row=0, column=1, padx=10, pady=10)
+        self.plot_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+
+        # Make plot and control frames expands
+        self.plot_frame.grid_rowconfigure(0, weight=1)
+        self.plot_frame.grid_columnconfigure(0, weight=1)
+        self.control_frame.grid_columnconfigure(0, weight=1)
+        self.control_frame.grid_columnconfigure(1, weight=2)
+        self.control_frame.grid_columnconfigure(2, weight=1)
 
         # Embed the robot's figure into the Tkinter canvas
         self.canvas = FigureCanvasTkAgg(self.robot.fig, master=self.plot_frame)
         self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=0, column=0)
+        self.canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
 
         # Set up the kinematics panel
         self.set_kinematics_panel()
@@ -317,6 +331,10 @@ class Visualizer:
         self.mp_follow_joint_button = ttk.Button(self.control_frame, text="Generate Traj (Joint-space)", command=self.generate_traj_joint_space)
         self.mp_follow_joint_button.grid(column=1, row=row_number, columnspan=1, pady=2)
         row_number += 1
+
+        # Allow all rows to shrink proportionally
+        for i in range(row_number):
+            self.control_frame.grid_rowconfigure(i, weight=1)
 
 
     def joints_from_sliders(self, val) -> None:
