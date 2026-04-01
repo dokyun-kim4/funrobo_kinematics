@@ -213,7 +213,6 @@ class Trapezoidal():
             qd_arr = np.array([])
             qdd_arr = np.array([])
             for t_ in t:
-                print(t_, t_b)
                 if 0 <= t_ < t_b:
                     print("acceleration phase")
                     q = q0 + accl*t_**2 / 2
