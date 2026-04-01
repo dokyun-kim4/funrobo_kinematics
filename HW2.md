@@ -16,9 +16,9 @@ The image below shows the generated position, velocity, acceleration plots for b
 
 The video below demonstrates the simulated 5DOF arm following the two different trajectories.
 
-[![Joint Space Demo Video](http://img.youtube.com/vi/YOVSvTwS8s8/0.jpg)](https://www.youtube.com/watch?v=YOVSvTwS8s8 "Joint Space Demo")  
+[![Joint Space Demo Video](http://img.youtube.com/vi/lHZ7wSkBSTk/0.jpg)](https://www.youtube.com/watch?v=lHZ7wSkBSTk "Joint Space Demo")  
 
-[![Task Space Demo Video](http://img.youtube.com/vi/plk7u-3Vp0Y/0.jpg)](http://www.youtube.com/watch?v=plk7u-3Vp0Y "Task Space Demo")
+[![Task Space Demo Video](http://img.youtube.com/vi/_WDXWWWYIFY/0.jpg)](http://www.youtube.com/watch?v=_WDXWWWYIFY "Task Space Demo")
 
 ## Trapezoidal
 The implementation of the trapezoidal generation method can be found [here](https://github.com/dokyun-kim4/funrobo_kinematics/blob/6ca45612e42a4d8671d23105357950112a13fb3f/examples/traj_gen.py#L182).
@@ -30,6 +30,6 @@ The image below shows the generated position, velocity, and acceleration plots f
 
 The video below demonstrates the simulated 5DOF arm following the two different trajectories.
 
-[![Joint Space Demo Video](http://img.youtube.com/vi/kyPxx4u9ZuM/0.jpg)](https://www.youtube.com/watch?v=kyPxx4u9ZuM "Joint Space Demo")  
+[![Joint Space Demo Video](http://img.youtube.com/vi/E-VdqmnlT_k/0.jpg)](https://www.youtube.com/watch?v=E-VdqmnlT_k "Joint Space Demo")  
 
-[![Task Space Demo Video](http://img.youtube.com/vi/k50k12Vvqrc/0.jpg)](http://www.youtube.com/watch?v=k50k12Vvqrc "Task Space Demo")
+[![Task Space Demo Video](http://img.youtube.com/vi/WYOINWk4CjI/0.jpg)](http://www.youtube.com/watch?v=WYOINWk4CjI "Task Space Demo")
